@@ -102,6 +102,50 @@ struct FCharacterMoveOption
 
 };
 
+USTRUCT(BlueprintType)
+struct FDirectionalAnimations
+{
+	GENERATED_BODY()
+
+
+	FDirectionalAnimations()
+	{
+		Forward = nullptr;
+		ForwardRight = nullptr;
+		ForwardLeft = nullptr;
+		Right = nullptr;
+		Left = nullptr;
+		Backward = nullptr;
+		BackwardRight = nullptr;
+		BackwardLeft = nullptr;
+	}
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Directional Anim")
+	UAnimSequence* Forward;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Directional Anim")
+	UAnimSequence* ForwardRight;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Directional Anim")
+	UAnimSequence* ForwardLeft;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Directional Anim")
+	UAnimSequence* Right;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Directional Anim")
+	UAnimSequence* Left;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Directional Anim")
+	UAnimSequence* Backward;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Directional Anim")
+	UAnimSequence* BackwardRight;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Directional Anim")
+	UAnimSequence* BackwardLeft;
+};
+
 #pragma endregion
 
 

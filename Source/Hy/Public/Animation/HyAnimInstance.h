@@ -16,6 +16,9 @@ class HY_API UHyAnimInstance : public UAnimInstance
 	GENERATED_BODY()
 	
 
+protected:
+	UFUNCTION(BlueprintCallable)
+	UHyAnimInstance* GetOwningAnimInstance();
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -25,4 +28,13 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Input, meta = (AllowPrivateAccess = "true"))
 
 	ELocomotionDirection LocomotionDirection;
+
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Anim, meta = (AllowPrivateAccess = "true"))
+	FDirectionalAnimations WalkCycleAnims;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Anim, meta = (AllowPrivateAccess = "true"))
+	FDirectionalAnimations JogCycleAnims;
 };
