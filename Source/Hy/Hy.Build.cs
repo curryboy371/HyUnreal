@@ -9,8 +9,7 @@ public class Hy : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
         PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "Sockets", "Networking" });
-
-		PrivateDependencyModuleNames.AddRange(new string[] {  });
+        PrivateDependencyModuleNames.AddRange(new string[] { "ProtobufCore" });
 
         PrivateIncludePaths.AddRange(new string[]
         {
@@ -19,6 +18,7 @@ public class Hy : ModuleRules
             "Hy/Public/Game/",
             "Hy/Public/Manager/",
             "Hy/Public/Network/",
+            "Hy/Public/Network/Protocol",
             "Hy/Public/Animation",
             "Hy/Public/Actor",
         });

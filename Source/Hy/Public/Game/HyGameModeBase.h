@@ -13,5 +13,10 @@ UCLASS()
 class HY_API AHyGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
-	
+public:
+
+	void Temp()
+	{
+
+	}
 };

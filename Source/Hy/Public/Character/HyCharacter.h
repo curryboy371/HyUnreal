@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Hy.h"
+
 #include "HyCharacter.generated.h"
 
 UCLASS()
@@ -25,5 +27,34 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+
+
+public:
+	/** Returns CameraBoom subobject **/
+	FORCEINLINE class USpringArmComponent* Get_CameraBoom() const { return CameraBoom; }
+	/** Returns FollowCamera subobject **/
+	FORCEINLINE class UCameraComponent* Get_FollowCamera() const { return FollowCamera; }
+
+
+protected:
+	/** Camera boom positioning the camera behind the character */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	class USpringArmComponent* CameraBoom;
+
+	/** Follow camera */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	class UCameraComponent* FollowCamera;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = MoveOption, meta = (AllowPrivateAccess = "true"))
+	TMap<ECharacterState, FCharacterMoveOption> CharacterMoveOptionMap;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Input, meta = (AllowPrivateAccess = "true"))
+
+	EEquippedWeaponState EquippedWeaponState;
+
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Input, meta = (AllowPrivateAccess = "true"))
+	ECharacterState CharacterState;
 
 };

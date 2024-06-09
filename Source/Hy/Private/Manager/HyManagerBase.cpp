@@ -3,3 +3,7 @@
 
 #include "Manager/HyManagerBase.h"
 
+UHyManagerBase::UHyManagerBase(const FObjectInitializer& ObjectInitializer)
+	:Super(ObjectInitializer), ManagerNum(EManagerNum::Max)
+{
+}
