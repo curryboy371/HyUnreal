@@ -111,23 +111,23 @@ struct FDirectionalAnimations
 	FDirectionalAnimations()
 	{
 		Forward = nullptr;
-		ForwardRight = nullptr;
-		ForwardLeft = nullptr;
+		//ForwardRight = nullptr;
+		//ForwardLeft = nullptr;
 		Right = nullptr;
 		Left = nullptr;
 		Backward = nullptr;
-		BackwardRight = nullptr;
-		BackwardLeft = nullptr;
+		//BackwardRight = nullptr;
+		//BackwardLeft = nullptr;
 	}
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Directional Anim")
 	UAnimSequence* Forward;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Directional Anim")
-	UAnimSequence* ForwardRight;
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Directional Anim")
+	//UAnimSequence* ForwardRight;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Directional Anim")
-	UAnimSequence* ForwardLeft;
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Directional Anim")
+	//UAnimSequence* ForwardLeft;
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Directional Anim")
@@ -139,11 +139,11 @@ struct FDirectionalAnimations
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Directional Anim")
 	UAnimSequence* Backward;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Directional Anim")
-	UAnimSequence* BackwardRight;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Directional Anim")
-	UAnimSequence* BackwardLeft;
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Directional Anim")
+	//UAnimSequence* BackwardRight;
+	//
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Directional Anim")
+	//UAnimSequence* BackwardLeft;
 };
 
 #pragma endregion
@@ -155,11 +155,11 @@ UENUM(BlueprintType)
 enum class ELocomotionDirection : uint8
 {
 	Forward					UMETA(DisplayName = "Forward Direction"),
-	ForwardRight			UMETA(DisplayName = "ForwardRight Direction"),
-	ForwardLeft				UMETA(DisplayName = "ForwardLeft Direction"),
+	//ForwardRight			UMETA(DisplayName = "ForwardRight Direction"),
+	//ForwardLeft				UMETA(DisplayName = "ForwardLeft Direction"),
 	Backward				UMETA(DisplayName = "Backward Direction"),
-	BackwardRight			UMETA(DisplayName = "BackwardRight Direction"),
-	BackwardLeft			UMETA(DisplayName = "BackwardLeft Direction"),
+	//BackwardRight			UMETA(DisplayName = "BackwardRight Direction"),
+	//BackwardLeft			UMETA(DisplayName = "BackwardLeft Direction"),
 	Right					UMETA(DisplayName = "Right Direction"),
 	Left					UMETA(DisplayName = "Left Direction"),
 };

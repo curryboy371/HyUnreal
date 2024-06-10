@@ -15,26 +15,110 @@ class HY_API UHyAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
 	
+public:
+	UHyAnimInstance();
+
+public:
+	virtual void NativeInitializeAnimation() override;
 
 protected:
-	UFUNCTION(BlueprintCallable)
-	UHyAnimInstance* GetOwningAnimInstance();
+	UFUNCTION(BlueprintCallable, Category = "Animation")
+	UHyAnimInstance* GetOwningAnimInstance() const;
+
+	UFUNCTION(BlueprintCallable, Category = "UpdateData", meta = (BlueprintThreadSafe))
+	void UpdateOwnerData();
+
+	//UFUNCTION(BlueprintCallable, Category = "UpdateData", meta = (BlueprintThreadSafe))
+	//void UpdateVelocityData();
+	//
+	//UFUNCTION(BlueprintCallable, Category = "UpdateData", meta = (BlueprintThreadSafe))
+	//void UpdateRotationData();
+	//
+	//UFUNCTION(BlueprintCallable, Category = "UpdateData", meta = (BlueprintThreadSafe))
+	//void UpdateOrientationData();
+	//
+	//UFUNCTION(BlueprintCallable, Category = "UpdateData", meta = (BlueprintThreadSafe))
+	//void UpdateDirectionData();
+	//
+	//UFUNCTION(BlueprintCallable, Category = "UpdateData", meta = (BlueprintThreadSafe))
+	//void UpdateAccelerationData();
+	//
+	//UFUNCTION(BlueprintCallable, Category = "UpdateData", meta = (BlueprintThreadSafe))
+	//void UpdateCharacterStateData();
+
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UCharacterMovementComponent* CharacterMovementComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Input, meta = (AllowPrivateAccess = "true"))
 	EEquippedWeaponState EquippedWeaponState;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Input, meta = (AllowPrivateAccess = "true"))
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Input, meta = (AllowPrivateAccess = "true"))
+	ECharacterState CharacterState;
+
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Input, meta = (AllowPrivateAccess = "true"))
+	ECharacterState CharacterState;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Input, meta = (AllowPrivateAccess = "true"))
+	ECharacterState LastFrameCharacterState;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Input, meta = (AllowPrivateAccess = "true"))
+	bool bChangeCharacterState;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Input, meta = (AllowPrivateAccess = "true"))
 	ELocomotionDirection LocomotionDirection;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Input, meta = (AllowPrivateAccess = "true"))
+	ELocomotionDirection LastFrameLocomotionDirection;
 
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data, meta = (AllowPrivateAccess = "true"))
+	FVector WorldLocation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data, meta = (AllowPrivateAccess = "true"))
+	FVector CharacterVelocity;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data, meta = (AllowPrivateAccess = "true"))
+	FVector CharacterVelocity2D;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data, meta = (AllowPrivateAccess = "true"))
+	FVector Acceleration;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data, meta = (AllowPrivateAccess = "true"))
+	FVector Acceleration2D;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data, meta = (AllowPrivateAccess = "true"))
+	bool bIsAccelerating;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data, meta = (AllowPrivateAccess = "true"))
+	FRotator WorldRotation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data, meta = (AllowPrivateAccess = "true"))
+	float VelocityAngle;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Anim, meta = (AllowPrivateAccess = "true"))
+	UAnimSequence* IdleAnim;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Anim, meta = (AllowPrivateAccess = "true"))
 	FDirectionalAnimations WalkCycleAnims;
 
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Anim, meta = (AllowPrivateAccess = "true"))
 	FDirectionalAnimations JogCycleAnims;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Anim, meta = (AllowPrivateAccess = "true"))
+	FDirectionalAnimations JogStopAnims;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Anim, meta = (AllowPrivateAccess = "true"))
+	FDirectionalAnimations WalkStopAnims;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Anim, meta = (AllowPrivateAccess = "true"))
+	FDirectionalAnimations JogStartAnims;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Anim, meta = (AllowPrivateAccess = "true"))
+	FDirectionalAnimations WalkStartAnims;
+
 };
