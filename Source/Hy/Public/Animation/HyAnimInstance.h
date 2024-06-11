@@ -21,31 +21,21 @@ public:
 public:
 	virtual void NativeInitializeAnimation() override;
 
-protected:
+	UFUNCTION(BlueprintPure, Category = "Animation", meta = (BlueprintThreadSafe))
+	const bool IsMaxSpeed() const;
+
+	UFUNCTION(BlueprintPure, Category = "Animation", meta = (BlueprintThreadSafe))
+	const bool IsCanStop() const { return (!bIsAccelerating && bIsZeroVelocity); } // 움직임과 가속이 모두 없음
+
 	UFUNCTION(BlueprintCallable, Category = "Animation")
 	UHyAnimInstance* GetOwningAnimInstance() const;
 
+protected:
 	UFUNCTION(BlueprintCallable, Category = "UpdateData", meta = (BlueprintThreadSafe))
 	void UpdateOwnerData();
 
-	//UFUNCTION(BlueprintCallable, Category = "UpdateData", meta = (BlueprintThreadSafe))
-	//void UpdateVelocityData();
-	//
-	//UFUNCTION(BlueprintCallable, Category = "UpdateData", meta = (BlueprintThreadSafe))
-	//void UpdateRotationData();
-	//
-	//UFUNCTION(BlueprintCallable, Category = "UpdateData", meta = (BlueprintThreadSafe))
-	//void UpdateOrientationData();
-	//
-	//UFUNCTION(BlueprintCallable, Category = "UpdateData", meta = (BlueprintThreadSafe))
-	//void UpdateDirectionData();
-	//
-	//UFUNCTION(BlueprintCallable, Category = "UpdateData", meta = (BlueprintThreadSafe))
-	//void UpdateAccelerationData();
-	//
-	//UFUNCTION(BlueprintCallable, Category = "UpdateData", meta = (BlueprintThreadSafe))
-	//void UpdateCharacterStateData();
-
+	UFUNCTION(BlueprintCallable, Category = "UpdateData", meta = (BlueprintThreadSafe))
+	ELocomotionDirection CalculationLocomotionDirection(float CurAngle, ELocomotionDirection CurDirection, FVector2D BackwardRange, FVector2D ForwardRange, float DeadZone);
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -54,10 +44,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Input, meta = (AllowPrivateAccess = "true"))
 	EEquippedWeaponState EquippedWeaponState;
 
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Input, meta = (AllowPrivateAccess = "true"))
-	ECharacterState CharacterState;
-
+	ECharacterState IncommingCharacterState;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Input, meta = (AllowPrivateAccess = "true"))
 	ECharacterState CharacterState;
@@ -79,10 +67,19 @@ protected:
 	FVector WorldLocation;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data, meta = (AllowPrivateAccess = "true"))
+	FVector LastWorldLocation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data, meta = (AllowPrivateAccess = "true"))
+	float LocationDelta;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data, meta = (AllowPrivateAccess = "true"))
 	FVector CharacterVelocity;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data, meta = (AllowPrivateAccess = "true"))
 	FVector CharacterVelocity2D;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data, meta = (AllowPrivateAccess = "true"))
+	bool bIsZeroVelocity;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data, meta = (AllowPrivateAccess = "true"))
 	FVector Acceleration;
@@ -92,6 +89,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data, meta = (AllowPrivateAccess = "true"))
 	bool bIsAccelerating;
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data, meta = (AllowPrivateAccess = "true"))
 	FRotator WorldRotation;

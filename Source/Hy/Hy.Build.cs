@@ -7,8 +7,8 @@ public class Hy : ModuleRules
 	public Hy(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "Sockets", "Networking" });
+        
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "Sockets", "Networking", "AnimGraphRuntime" });
         PrivateDependencyModuleNames.AddRange(new string[] { "ProtobufCore" });
 
         PrivateIncludePaths.AddRange(new string[]

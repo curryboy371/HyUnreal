@@ -8,6 +8,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 
 #include "Math/UnrealMathUtility.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "KismetAnimationLibrary.h"
 
 UHyAnimInstance::UHyAnimInstance()
 	:CharacterMovementComponent(nullptr), CharacterState(ECharacterState::Idle)
@@ -36,6 +38,15 @@ void UHyAnimInstance::NativeInitializeAnimation()
 	}
 }
 
+const bool UHyAnimInstance::IsMaxSpeed() const
+{
+	if (CharacterMovementComponent)
+	{
+		return FMath::IsNearlyEqual(CharacterVelocity2D.Length(), CharacterMovementComponent->MaxWalkSpeed, 0.0001f);
+	}
+	return false;
+}
+
 UHyAnimInstance* UHyAnimInstance::GetOwningAnimInstance() const
 {
 	if (AActor* OwningActor = GetOwningActor())
@@ -60,59 +71,125 @@ UHyAnimInstance* UHyAnimInstance::GetOwningAnimInstance() const
 
 void UHyAnimInstance::UpdateOwnerData()
 {
+	if (nullptr == CharacterMovementComponent)
+	{
+		return;
+	}
+
+	FVector Vector2D = FVector(1.f, 1.f, 0.f);
+
 	if (AActor* OwningActor = GetOwningActor())
 	{
+		// Set Location, Rotation
+		LastWorldLocation = WorldLocation;
 		WorldLocation = OwningActor->GetActorLocation();
+		LocationDelta = (WorldLocation - LastWorldLocation).Length();
+
+
 		WorldRotation = OwningActor->GetActorRotation();
 
-	}
+		// Set character state
+		LastFrameCharacterState = CharacterState;
+		CharacterState = IncommingCharacterState;
+		bChangeCharacterState = (CharacterState != LastFrameCharacterState) ? true : false;
 
+		// Set Accelation 
+		Acceleration = CharacterMovementComponent->GetCurrentAcceleration();
+		Acceleration2D = Vector2D * Acceleration;
+		bIsAccelerating = !FMath::IsNearlyEqual(Acceleration2D.Length(), 0.0f, 0.0001f);
 
-	// character state
-	LastFrameCharacterState = CharacterState;
-	CharacterState = IncommingCharacterState;
-	bChangeCharacterState = (CharacterState != LastFrameCharacterState) ? true : false;
-
-	//AccelationData
-	Acceleration = CharacterMovementComponent->GetCurrentAcceleration();
-	Acceleration2D = FVector(1.f, 1.f, 0.f) * Acceleration;
-
-
-
-	// 
-	// velocity 
-	// movement
-	if (CharacterMovementComponent)
-	{
+		// Set Velocity
 		CharacterVelocity = CharacterMovementComponent->Velocity;
 		CharacterVelocity2D = FVector(1.f, 1.f, 0.f) * CharacterVelocity;
-		bIsAccelerating = !FMath::IsNearlyEqual(CharacterVelocity2D.Length(), 0.0f, 0.0001f);
+		bIsZeroVelocity = FMath::IsNearlyEqual(CharacterVelocity2D.Length(), 0.0f, 0.0001f);
 
+		// Set Direction, Angle
+		LastFrameLocomotionDirection = LocomotionDirection;
+		VelocityAngle = UKismetAnimationLibrary::CalculateDirection(CharacterVelocity2D, WorldRotation);
+		LocomotionDirection = CalculationLocomotionDirection(VelocityAngle, LocomotionDirection, FVector2D(-130, 130), FVector2D(-50, 50), 20.f);
 
 	}
 
+}
 
+ELocomotionDirection UHyAnimInstance::CalculationLocomotionDirection(float CurAngle, ELocomotionDirection CurDirection, FVector2D BackwardRange, FVector2D ForwardRange, float DeadZone)
+{
 
-	// rotation
-		// get actor rotation 
-
-	// rorientation
-
-	// direction
-
-	// acceleration
-
-	// character state
-
-
-	if (AActor* OwningActor = GetOwningActor())
+	// deadzone check
+	// FVector2D X Min, Y Max
+	switch (CurDirection)
 	{
+	case ELocomotionDirection::Forward:
+	{
+		float Min = ForwardRange.X - DeadZone;
+		float Max = ForwardRange.Y + DeadZone;
 
-		OwningActor->GetMove
-		ACharacter* OwningCharacter = Cast<ACharacter>(OwningActor);
-
-
-
+		if (UKismetMathLibrary::InRange_FloatFloat(CurAngle, Min, Max))
+		{
+			return ELocomotionDirection::Forward;
+		}
 	}
 
+		break;
+	case ELocomotionDirection::Backward:
+	{
+		if (CurAngle < BackwardRange.X + DeadZone || CurAngle > BackwardRange.Y - DeadZone)
+		{
+			return ELocomotionDirection::Backward;
+		}
+	}
+		break;
+	case ELocomotionDirection::Right:
+	{
+		float Min = ForwardRange.Y - DeadZone;
+		float Max = BackwardRange.Y + DeadZone;
+
+		if (UKismetMathLibrary::InRange_FloatFloat(CurAngle, Min, Max))
+		{
+			return ELocomotionDirection::Right;
+		}
+
+	}
+		break;
+	case ELocomotionDirection::Left:
+	{
+		float Min = BackwardRange.X - DeadZone;
+		float Max = ForwardRange.X + DeadZone;
+
+		if (UKismetMathLibrary::InRange_FloatFloat(CurAngle, Min, Max))
+		{
+			return ELocomotionDirection::Left;
+		}
+
+	}
+		break;
+	default:
+		break;
+	}
+
+	if (CurAngle < BackwardRange.X || CurAngle > BackwardRange.Y)
+	{
+		return ELocomotionDirection::Backward;
+	}
+	else
+	{
+		float Min = ForwardRange.X;
+		float Max = ForwardRange.Y;
+		if (UKismetMathLibrary::InRange_FloatFloat(CurAngle, Min, Max))
+		{
+			return ELocomotionDirection::Forward;
+		}
+		else
+		{
+			if (CurAngle > 0.f)
+			{
+				return ELocomotionDirection::Right;
+
+			}
+			else
+			{
+				return ELocomotionDirection::Left;
+			}
+		}
+	}
 }
