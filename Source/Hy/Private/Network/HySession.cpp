@@ -30,8 +30,14 @@ void HySession::HandleRecvPackets()
 			break;
 		}
 
+		FPacketHeader* header = reinterpret_cast<FPacketHeader*>(Packet.GetData());
+		if (header)
+		{
+			LOG_V("PacketID %d, PacketSize %d", header->PacketID, header->PacketSize);
+		}
 		LOG_V("Packet.Num() : %d", Packet.Num());
-		Packet.Num();
+
+
 
 		HySessionRef sessionRef = AsShared();
 		if (ClientPacketHandler::HandlePacket(sessionRef, Packet.GetData(), Packet.Num()))

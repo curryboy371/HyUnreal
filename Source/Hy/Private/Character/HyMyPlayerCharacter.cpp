@@ -20,10 +20,8 @@ AHyMyPlayerCharacter::AHyMyPlayerCharacter()
 
 }
 
-void AHyMyPlayerCharacter::BeginPlay()
-{
-	Super::BeginPlay();
-
+void AHyMyPlayerCharacter::AddMappingContext()
+{	
 	//Add Input Mapping Context
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
@@ -32,6 +30,13 @@ void AHyMyPlayerCharacter::BeginPlay()
 			Subsystem->AddMappingContext(PlayerIMC, 0);
 		}
 	}
+}
+
+void AHyMyPlayerCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	AddMappingContext();
 }
 
 void AHyMyPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

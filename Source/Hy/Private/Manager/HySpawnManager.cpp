@@ -5,6 +5,9 @@
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 #include "HyMyPlayerCharacter.h"
+#include "HyPlayerController.h"
+
+#include "HyGameModeBase.h"
 
 void UHySpawnManager::InitManager()
 {
@@ -19,31 +22,55 @@ void UHySpawnManager::ReleaseManager()
 
 void UHySpawnManager::SpawnMyPlayer(const FObjectSpawnInfo& InObjectInfo)
 {
-    FString BlueprintPath = TEXT("/Game/Blueprints/Character/HyMyPlayer_BP.HyMyPlayer_BP_C");
-    UClass* PlayerBPClass = StaticLoadClass(AActor::StaticClass(), nullptr, *BlueprintPath);
+    /*
+    // Memo
+    초기에는 Player가 자동 스폰되지 않고 패킷을 통해 생성하려고 하였음.
+    PC와 Player를 직접 생성하고 연결하려고 하였으나 추가적으로 설정해줘야하는 부분들이 있어 ( LocalPlayer등..)
+    그냥 언리얼에서 직접 생성한 PC를 사용하는게 나을 것 같아 수정함
+    */
+
+    FString PlayerBlueprintPath = TEXT("/Game/Blueprints/Character/HyMyPlayer_BP.HyMyPlayer_BP_C");
+    UClass* PlayerBPClass = StaticLoadClass(AActor::StaticClass(), nullptr, *PlayerBlueprintPath);
 
     if (PlayerBPClass)
     {
-        AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(PlayerBPClass, InObjectInfo.Location, InObjectInfo.Rotation);
-
-        if (SpawnedActor)
+        // PC 먼저 생성
+        APlayerController* PC = nullptr;
+        AGameModeBase* MyGameMode = Cast<AGameModeBase>(UGameplayStatics::GetGameMode(this));
+        if (MyGameMode)
         {
-            if (AActor* Actor = Cast<AActor>(SpawnedActor))
+            FString Option;
+            PC = MyGameMode->SpawnPlayerController(ROLE_AutonomousProxy, Option);
+        }
+
+        if (PC)
+        {
+            AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(PlayerBPClass, InObjectInfo.Location, InObjectInfo.Rotation);
+            if (SpawnedActor)
             {
-                // NewCharacter Init
-                ObjectsMap.Emplace(InObjectInfo.ObjectID, Actor);
-                MyPlayer = Cast<AHyMyPlayerCharacter>(SpawnedActor);
-                if (MyPlayer)
+                if (AActor* Actor = Cast<AActor>(SpawnedActor))
                 {
-                    MyPlayer->Set_ObjectID(InObjectInfo.ObjectID);
+                    // NewCharacter Init
+                    ObjectsMap.Emplace(InObjectInfo.ObjectID, Actor);
+                    MyPlayer = Cast<AHyMyPlayerCharacter>(SpawnedActor);
+                    if (MyPlayer)
+                    {
+                        PC->Possess(MyPlayer);
+                        MyPlayer->AddMappingContext();
+                        MyPlayer->Set_ObjectID(InObjectInfo.ObjectID);
+
+                    }
                 }
             }
+            else
+            {
+                ERR_V("Character Create Fail ID : %lld", InObjectInfo.ObjectID);
+                return;
+            }
+
         }
-        else
-        {
-            ERR_V("Character Create Fail ID : %lld", InObjectInfo.ObjectID);
-            return;
-        }
+
+
     }
     else
     {

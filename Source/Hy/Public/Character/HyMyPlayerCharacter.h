@@ -17,10 +17,13 @@ public:
 	// Sets default values for this character's properties
 	AHyMyPlayerCharacter();
 
+public:
+	void AddMappingContext();
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
 
 
 	void Input_Move(const struct FInputActionValue& Value);
