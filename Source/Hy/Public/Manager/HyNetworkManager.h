@@ -27,7 +27,13 @@ public:
 	// UHyManagerBase을(를) 통해 상속됨
 	virtual void InitManager() override;
 	virtual void ReleaseManager() override;
+	virtual void UpdateManager(float DeltaTime) override;
 
+	UFUNCTION(BlueprintCallable, Category = "Protocol")
+	void CSLogin();
+
+	UFUNCTION(BlueprintCallable, Category = "Protocol")
+	void CSLeaveGame();
 
 private:
 	// GameServer

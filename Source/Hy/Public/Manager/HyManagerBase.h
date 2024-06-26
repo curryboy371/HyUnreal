@@ -22,6 +22,7 @@ public:
 
 	virtual void InitManager() {};
 	virtual void ReleaseManager() {};
+	virtual void UpdateManager(float DeltaTime) {};
 
 public:
 	GETTER(EManagerNum, ManagerNum);

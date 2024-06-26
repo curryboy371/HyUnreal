@@ -13,5 +13,11 @@ UCLASS()
 class HY_API AHyPlayerCharacter : public AHyCharacter
 {
 	GENERATED_BODY()
+public:
+	AHyPlayerCharacter();
 	
+
+public:
+	UFUNCTION(BlueprintCallable)
+	FString GetPlayerName();
 };

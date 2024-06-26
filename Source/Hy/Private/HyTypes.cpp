@@ -1,5 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "HyTypes.h"
+#include "HyGameInstance.h"
+
+UHyGameInstance* GGameInstance = nullptr;
+
 
 SendBuffer::SendBuffer(int32 bufferSize)
 {

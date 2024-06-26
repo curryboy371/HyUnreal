@@ -8,17 +8,18 @@
 
 #include "ClientPacketHandler.h"
 
-void UHyGameInstance::Init()
+void UHyGameInstance::InitGameInstnace()
 {
+    GGameInstance = Cast<UHyGameInstance>(GWorld->GetGameInstance());
     ClientPacketHandler::Init();
     LOG_I;
-    //InitManager();
+    InitManager();
 }
 
-void UHyGameInstance::Shutdown()
+void UHyGameInstance::ClearGameInstnace()
 {
     LOG_I;
-    //ReleaseManager();
+    ReleaseManager();
 }
 
 void UHyGameInstance::InitManager()
@@ -36,7 +37,8 @@ void UHyGameInstance::InitManager()
             UHyManagerBase* NewManager = NewObject<UHyManagerBase>(this, Class);
             if (NewManager)
             {
-                Managers.Add(NewManager->Get_ManagerNum(), NewManager);
+                int32 MngIndex = Managers.Num();
+                Managers.Add(MngIndex, NewManager);
             }
         }
     }
@@ -64,4 +66,16 @@ void UHyGameInstance::ReleaseManager()
     }
 
     Managers.Reset();
+}
+
+void UHyGameInstance::UpdateManager(float DeltaTime)
+{
+    for (auto manager : Managers)
+    {
+        if (manager.Value)
+        {
+            manager.Value->UpdateManager(DeltaTime);
+
+        }
+    }
 }

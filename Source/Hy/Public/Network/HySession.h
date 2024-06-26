@@ -24,6 +24,11 @@ public:
 	void Disconnect();
 
 public:
+	GETTER(bool, bIsConnect)
+	SETTER(bool, bIsConnect)
+
+
+public:
 	class FSocket* Socket;
 
 	// 이러면 세션 하나당 스레드 1인데...
@@ -35,5 +40,9 @@ public:
 	TQueue <TArray<uint8>> RecvPacketQueue;
 
 	TQueue<SendBufferRef> SendPacketQueue;
+
+
+private:
+	bool bIsConnect;
 
 };

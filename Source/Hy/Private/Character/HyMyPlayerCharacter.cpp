@@ -9,6 +9,11 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 
+#include "Hy.h"
+#include "HyNetworkManager.h"
+#include "HySpawnManager.h"
+
+
 
 AHyMyPlayerCharacter::AHyMyPlayerCharacter()
 {
@@ -100,10 +105,12 @@ void AHyMyPlayerCharacter::Input_Jump(const FInputActionValue& Value)
 
 void AHyMyPlayerCharacter::Input_Equip(const FInputActionValue& Value)
 {
+	GGameInstance->GetManager<UHyNetworkManager>()->CSLeaveGame();
 }
 
 void AHyMyPlayerCharacter::Input_Attack(const FInputActionValue& Value)
 {
+	SCREEN_LOG_V("ObjectID : %lld", ObjectID);
 }
 
 void AHyMyPlayerCharacter::Input_Aim(const FInputActionValue& Value)

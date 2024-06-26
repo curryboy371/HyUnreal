@@ -7,6 +7,7 @@
 #include "HyTypes.h"
 
 
-
+#include "HyGameinstance.h"
+#include "ClientPacketHandler.h"
 
 

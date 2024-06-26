@@ -5,9 +5,9 @@
 #include "Sockets.h"
 #include "Serialization/ArrayWriter.h"
 #include "HySession.h"
-
+#include "SocketSubsystem.h"
 RecvWorker::RecvWorker(FSocket* InSocket, TSharedPtr<class HySession> InSession)
-	:Socket(InSocket), SessionRef(InSession), Thread(nullptr)
+	:Socket(InSocket), SessionRef(InSession.ToWeakPtr()), Thread(nullptr)
 {
 	Thread = FRunnableThread::Create(this, TEXT("RecvWorkerThread"));
 }
@@ -16,6 +16,8 @@ RecvWorker::~RecvWorker()
 {
 	if (Thread)
 	{
+		Thread->WaitForCompletion();
+		Thread->Kill();
 		delete Thread;
 		Thread = nullptr;
 	}
@@ -125,7 +127,8 @@ bool RecvWorker::ReceiveDesiredBytes(uint8* Results, int32 Size)
 	return true;
 }
 
-SendWorker::SendWorker(FSocket* Socket, TSharedPtr<class HySession> Session)
+SendWorker::SendWorker(FSocket* InSocket, TSharedPtr<class HySession> InSession)
+	:Socket(InSocket), SessionRef(InSession.ToWeakPtr()), Thread(nullptr)
 {
 	Thread = FRunnableThread::Create(this, TEXT("SendWorkerThread"));
 }
@@ -134,6 +137,8 @@ SendWorker::~SendWorker()
 {
 	if (Thread)
 	{
+		Thread->WaitForCompletion();
+		Thread->Kill();
 		delete Thread;
 		Thread = nullptr;
 	}
@@ -155,7 +160,10 @@ uint32 SendWorker::Run()
 		{
 			if (Session->SendPacketQueue.Dequeue(OUT SendBuffer))
 			{
-				SendPacket(SendBuffer);
+				if (SendPacket(SendBuffer) == false)
+				{
+					UE_LOG(LogTemp, Error, TEXT("SendWorker::Run SendPacket error"));
+				}
 			}
 		}
 
@@ -186,9 +194,18 @@ bool SendWorker::SendDesiredBytes(const uint8* Buffer, int32 Size)
 {
 	while (Size > 0)
 	{
+
 		int32 BytesSent = 0;
+		LOG_V("Send Start");
+
 		if (Socket->Send(Buffer, Size, BytesSent) == false)
+		{
+
+			ESocketErrors LastError = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->GetLastErrorCode();
+			const TCHAR* ErrorText = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->GetSocketError(LastError);
+			ERR_V("Send Error %s", ErrorText);
 			return false;
+		}
 
 		Size -= BytesSent;
 		Buffer += BytesSent;

@@ -19,11 +19,11 @@ class HY_API UHyGameInstance : public UGameInstance
 	GENERATED_BODY()
 
 public:
-	/** virtual function to allow custom GameInstances an opportunity to set up what it needs */
-	virtual void Init() override;
+	UFUNCTION(BlueprintCallable)
+	void InitGameInstnace();
 
-	/** virtual function to allow custom GameInstances an opportunity to do cleanup when shutting down */
-	virtual void Shutdown() override; // Optional: If you need cleanup at the end of the game
+	UFUNCTION(BlueprintCallable)
+	void ClearGameInstnace();
 
 	UFUNCTION(BlueprintCallable)
 	void InitManager();
@@ -31,20 +31,29 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ReleaseManager();
 
+	void UpdateManager(float DeltaTime);
+
 	template<typename T>
-	T GetManager()
+	T* GetManager()
 	{
 		static_assert(TIsDerivedFrom<T, UHyManagerBase>::Value, "T must be derived from UHyManagerBase");
+		T* Manager = nullptr;
 
-		EManagerNum FindEnum = T::StaticClass()->GetDefaultObject<T>()->Get_ManagerNum();
-		if (Managers.Contains(FindEnum) == true)
+		for (int32 i = 0; i < Managers.Num(); ++i)
 		{
-			return  Managers[FindEnum];
+			Manager = Cast<T>(Managers[i]);
+			if (Manager)
+			{
+				break;
+			}
 		}
+
+		return Manager;
 	}
 
 protected:
 	UPROPERTY()
-	TMap<EManagerNum, class UHyManagerBase*> Managers;
+	TMap<int32, class UHyManagerBase*> Managers;
+
 };
 

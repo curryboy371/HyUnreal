@@ -10,7 +10,7 @@
 
 
 HySession::HySession(FSocket* InSocket)
-	:Socket(InSocket), RecvWorkerThread(nullptr), SendWorkerThread(nullptr)
+	:Socket(InSocket), RecvWorkerThread(nullptr), SendWorkerThread(nullptr), bIsConnect(false)
 {
 
 }
@@ -48,7 +48,6 @@ void HySession::HandleRecvPackets()
 void HySession::SendPacket(SendBufferRef SendBuffer)
 {
 	SendPacketQueue.Enqueue(SendBuffer);
-
 }
 
 void HySession::Run()

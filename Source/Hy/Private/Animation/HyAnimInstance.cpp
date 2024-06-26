@@ -106,8 +106,37 @@ void UHyAnimInstance::UpdateOwnerData()
 		// Set Direction, Angle
 		LastFrameLocomotionDirection = LocomotionDirection;
 		VelocityAngle = UKismetAnimationLibrary::CalculateDirection(CharacterVelocity2D, WorldRotation);
-		LocomotionDirection = CalculationLocomotionDirection(VelocityAngle, LocomotionDirection, FVector2D(-130, 130), FVector2D(-50, 50), 20.f);
 
+		FVector2D BackRange = { -130, 130 };
+		FVector2D LeftRange = { -130, -50 };
+		FVector2D RightRange = { 50, 130 };
+		FVector2D FowardRange = { -50, 50 };
+		LocomotionDirection = CalculationLocomotionDirection(VelocityAngle, LocomotionDirection, BackRange, FowardRange, 20.f);
+
+		bIsOnAir = CharacterMovementComponent->MovementMode == EMovementMode::MOVE_Falling;
+
+		// 점프중
+		bIsJumping = CharacterVelocity.Z > 0.f && bIsOnAir;
+
+		// 낙하중
+		bIsFalling = CharacterVelocity.Z < 0.f && bIsOnAir;
+
+		// 점프 최고점 시간 계산
+		float CharacterVerticalVelocity = 0 - CharacterVelocity.Z;
+
+		// 캐릭터의 중력 및 중력 스케일
+		float GravityZ = CharacterMovementComponent->GetGravityZ();
+		float GravityScale = CharacterMovementComponent->GravityScale;
+
+		// 점프의 최고점에 도달하는데 걸리는 시간
+		if(bIsJumping)
+		{
+			JumpApexTime = CharacterVerticalVelocity / (GravityZ * GravityScale);
+		}
+		else
+		{
+			JumpApexTime = 0.f;
+		}
 	}
 
 }

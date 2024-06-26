@@ -1,6 +1,8 @@
 #pragma once
 #include "ClientPacketHandler.h"
-#include "Protocol.pb.h"
+#include "Hy.h"
+#include "HySpawnManager.h"
+#include "HySession.h"
 
 //#include "NetworkManager.h"
 //#include "SessionManager.h"
@@ -24,6 +26,14 @@ bool SC_LOGIN(HySessionRef& session, Protocol::SC_LOGIN& pkt)
 {
     if (pkt.success() == true)
     {
+
+        //// 게임 입장 시도
+        Protocol::CS_ENTER_GAME enterPkt;
+
+        enterPkt.set_player_id(pkt.user_info().id());
+        SendBufferRef sendBuffer = ClientPacketHandler::MakeSendBuffer(enterPkt);
+        session->SendPacket(sendBuffer);
+
         //UserRef user = std::make_shared<User>();
         //user->Set_user_info(pkt.user_info());
         //user->Set_ownerSession(session);
@@ -36,8 +46,7 @@ bool SC_LOGIN(HySessionRef& session, Protocol::SC_LOGIN& pkt)
         //
         //session->SetSessionStatus(E_SESSION_STATUS::E_LOGIN_STATUS);
         //
-        //// 방 입장 시도
-        //Protocol::CS_ENTER_ROOM enterPkt;
+
         //enterPkt.set_room_name("test room");
         //enterPkt.set_userid(user->GetUserID());
         //SendBufferRef sendBuffer = ClientPacketHandler::MakeSendBuffer(enterPkt);
@@ -106,7 +115,156 @@ bool SC_ENTER_ROOM(HySessionRef& session, Protocol::SC_ENTER_ROOM& pkt)
     return true;
 }
 
-bool SC_ENTER_ROOM_OTHERS(HySessionRef& session, Protocol::SC_ENTER_ROOM_OTHERS& pkt)
+bool SC_ENTER_GAME(HySessionRef& session, Protocol::SC_ENTER_GAME& pkt)
+{
+    if (pkt.success())
+    {
+        Protocol::hyps_pos_info MyPlayer = pkt.my_player();
+        FObjectSpawnInfo SpawnInfo;
+        SpawnInfo.ObjectID = MyPlayer.object_id();
+        SpawnInfo.ObjectType = Protocol::hype_object_type::creature;
+        SpawnInfo.Location = FVector(MyPlayer.x(), MyPlayer.y(), MyPlayer.z());
+        SpawnInfo.Rotation = FRotator(0.f, MyPlayer.yaw(), 0.f);
+
+        if(GGameInstance->GetManager<UHySpawnManager>())
+        {
+            GGameInstance->GetManager<UHySpawnManager>()->SpawnMyPlayer(SpawnInfo);
+        }
+    }
+    else
+    {
+        ERR_V("fail");
+        return false;
+    }
+
+    return true;
+}
+
+bool SC_LEAVE_GAME(HySessionRef& session, Protocol::SC_LEAVE_GAME& pkt)
+{
+
+    return true;
+}
+
+bool BC_LEAVE_GAME(HySessionRef& session, Protocol::BC_LEAVE_GAME& pkt)
+{
+
+    return true;
+}
+
+bool SC_SPAWN(HySessionRef& session, Protocol::SC_SPAWN& pkt)
+{
+    for (int32 i = 0; i < pkt.players_size(); ++i)
+    {
+        Protocol::hyps_object_info object_info = pkt.players(i);
+
+        if (object_info.object_type() == Protocol::hype_object_type::creature)
+        {
+            Protocol::hyps_pos_info pos_info = object_info.pos_info();
+
+            FObjectSpawnInfo SpawnInfo;
+            SpawnInfo.ObjectID = object_info.object_id();
+            SpawnInfo.ObjectType = Protocol::hype_object_type::creature;
+            SpawnInfo.Location = FVector(pos_info.x(), pos_info.y(), pos_info.z());
+            SpawnInfo.Rotation = FRotator(0.f, pos_info.yaw(), 0.f);
+
+            if (GGameInstance->GetManager<UHySpawnManager>())
+            {
+                GGameInstance->GetManager<UHySpawnManager>()->SpawnObject(SpawnInfo);
+            }
+        }
+    }
+
+
+
+    return true;
+}
+
+bool BC_SPAWN(HySessionRef& session, Protocol::BC_SPAWN& pkt)
+{
+    for (int32 i = 0; i < pkt.players_size(); ++i)
+    {
+        Protocol::hyps_object_info object_info = pkt.players(i);
+
+        if (object_info.object_type() == Protocol::hype_object_type::creature)
+        {
+            Protocol::hyps_pos_info pos_info = object_info.pos_info();
+
+            FObjectSpawnInfo SpawnInfo;
+            SpawnInfo.ObjectID = object_info.object_id();
+            SpawnInfo.ObjectType = Protocol::hype_object_type::creature;
+            SpawnInfo.Location = FVector(pos_info.x(), pos_info.y(), pos_info.z());
+            SpawnInfo.Rotation = FRotator(0.f, pos_info.yaw(), 0.f);
+
+            if (GGameInstance->GetManager<UHySpawnManager>())
+            {
+                GGameInstance->GetManager<UHySpawnManager>()->SpawnObject(SpawnInfo);
+            }
+        }
+    }
+    return true;
+}
+
+bool SC_DESPAWN(HySessionRef& session, Protocol::SC_DESPAWN& pkt)
+{
+    if (session == nullptr)
+    {
+        return false;
+    }
+
+
+    return true;
+}
+
+bool BC_DESPAWN(HySessionRef& session, Protocol::BC_DESPAWN& pkt)
+{
+    if (session == nullptr)
+    {
+        return false;
+    }
+
+    UHySpawnManager* SpawnMgr = GGameInstance->GetManager<UHySpawnManager>();
+    if (SpawnMgr == nullptr)
+    {
+        return false;
+    }
+
+    int32 object_size = pkt.object_ids_size();
+    
+    for (int32 i = 0; i < object_size; ++i)
+    {
+        int64 id = pkt.object_ids(i);
+        SpawnMgr->DeSpawnObject(id);
+    }
+
+    return true;
+}
+
+bool SC_MOVE_OBJECT(HySessionRef& session, Protocol::SC_MOVE_OBJECT& pkt)
+{
+    if (session == nullptr)
+    {
+        return false;
+    }
+
+    UHySpawnManager* SpawnMgr = GGameInstance->GetManager<UHySpawnManager>();
+    if (SpawnMgr == nullptr)
+    {
+        return false;
+    }
+
+    Protocol::hyps_object_info move_info = pkt.move_info();
+    Protocol::hyps_pos_info pos_info =  move_info.pos_info();
+    
+    FVector Location = FVector(pos_info.x(), pos_info.y(), pos_info.z());
+    SpawnMgr->MoveObject(move_info.object_id(), Location);
+
+
+    return true;
+}
+
+
+bool BC_ENTER_ROOM_OTHERS(HySessionRef& session, Protocol::BC_ENTER_ROOM_OTHERS& pkt)
 {
     if (session)
     {

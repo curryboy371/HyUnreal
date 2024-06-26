@@ -57,4 +57,13 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Input, meta = (AllowPrivateAccess = "true"))
 	ECharacterState CharacterState;
 
+public:
+	GETTER(int64, ObjectID)
+	SETTER(int64, ObjectID)
+
+protected:
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Data, meta = (AllowPrivateAccess = "true"))
+	int64 ObjectID;
+
 };

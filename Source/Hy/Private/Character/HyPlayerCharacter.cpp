@@ -2,4 +2,15 @@
 
 
 #include "Character/HyPlayerCharacter.h"
+#include "HyPlayerCharacter.h"
 
+AHyPlayerCharacter::AHyPlayerCharacter()
+{
+}
+
+FString AHyPlayerCharacter::GetPlayerName()
+{
+	FString strID = FString::Printf(TEXT("%lld"), ObjectID);
+
+	return strID;
+}

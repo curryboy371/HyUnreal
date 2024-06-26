@@ -4,11 +4,19 @@
 
 
 #include "CoreMinimal.h"
+#include "Protocol.pb.h"
 #include "UObject/NoExportTypes.h"
+
+
+#include "TimerManager.h"
+#include "Engine/World.h"
+
+
 #include "HyTypes.generated.h" // GENERATED_BODY() 매크로를 사용하기 위해 필요
 /**
  *
  */
+extern class UHyGameInstance* GGameInstance;
 
 #pragma region Define
 
@@ -18,6 +26,40 @@
 
 
 #pragma region Struct
+
+struct FUserInfo
+{
+	// hyps_user_info
+	FUserInfo()
+	{
+		UserID = 0;
+		UserName = TEXT("");
+		UserType = Protocol::hype_user::user_none;
+	}
+
+	int64 UserID;
+	FString UserName;
+	Protocol::hype_user UserType;
+};
+
+struct FObjectSpawnInfo
+{
+	// hyps_pos_info
+	// hyps_object_info
+	FObjectSpawnInfo()
+	{
+		ObjectID = 0;
+		Location = FVector::Zero();
+		Rotation = FRotator::ZeroRotator;
+		ObjectType = Protocol::hype_object_type::none;
+	}
+
+	int64 ObjectID;
+	FVector Location;
+	FRotator Rotation;
+	Protocol::hype_object_type ObjectType;
+};
+
 
 
 
@@ -121,7 +163,7 @@ struct FDirectionalAnimations
 	}
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Directional Anim")
-	UAnimSequence* Forward;
+	TObjectPtr<UAnimSequence> Forward;
 
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Directional Anim")
 	//UAnimSequence* ForwardRight;
@@ -131,13 +173,13 @@ struct FDirectionalAnimations
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Directional Anim")
-	UAnimSequence* Right;
+	TObjectPtr<UAnimSequence> Right;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Directional Anim")
-	UAnimSequence* Left;
+	TObjectPtr<UAnimSequence> Left;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Directional Anim")
-	UAnimSequence* Backward;
+	TObjectPtr<UAnimSequence> Backward;
 
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Directional Anim")
 	//UAnimSequence* BackwardRight;
@@ -145,6 +187,36 @@ struct FDirectionalAnimations
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Directional Anim")
 	//UAnimSequence* BackwardLeft;
 };
+
+USTRUCT(BlueprintType)
+struct FJumpAnimations
+{
+	GENERATED_BODY()
+		FJumpAnimations()
+	{
+		JumpStart = nullptr;
+		JumpStartLoop = nullptr;
+		JumpApex = nullptr;
+		JumpFallLand = nullptr;
+		JumpFallLoop = nullptr;
+	}
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Jump Anim")
+	TObjectPtr<UAnimSequence> JumpStart;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Jump Anim")
+	TObjectPtr<UAnimSequence> JumpStartLoop;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Jump Anim")
+	TObjectPtr<UAnimSequence> JumpApex;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Jump Anim")
+	TObjectPtr<UAnimSequence> JumpFallLand;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Jump Anim")
+	TObjectPtr<UAnimSequence> JumpFallLoop;
+};
+
 
 #pragma endregion
 
@@ -187,8 +259,11 @@ enum class ECharacterState : uint8
 UENUM(BlueprintType)
 enum class EManagerNum : uint8
 {
-	Network    UMETA(DisplayName = "Network Manager"),
-	Max        UMETA(DisplayName = "Max Manager")
+	Time	    UMETA(DisplayName = "Time Manager"),
+	Spawn	    UMETA(DisplayName = "Spawn Manager"),
+	Data		UMETA(DisplayName = "Data Manager"),
+	Network		UMETA(DisplayName = "Network Manager"),
+	Max			UMETA(DisplayName = "Max Manager")
 };
 
 #pragma endregion
@@ -230,6 +305,7 @@ inline FString GetCleanFilename(const char* FilePath)
 #define LOG_GUARD_STR(str)
 #else
 
+#define LOG_E(msg)		UE_LOG(LogTemp, Log, TEXT("[LOG] %s", msg))
 #define LOG_V(Fmt, ...) UE_LOG(LogTemp, Log, TEXT("[LOG][%s::%s(%d)] " Fmt), *__FILENAME__, TEXT(__FUNCTION__), __LINE__, ##__VA_ARGS__)
 #define WAR_V(Fmt, ...) UE_LOG(LogTemp, Warning, TEXT("[WAR][%s::%s(%d)] " Fmt), *__FILENAME__, TEXT(__FUNCTION__), __LINE__, ##__VA_ARGS__)
 #define LOG_I			UE_LOG(LogTemp, Log, TEXT("[LOG][%s::%s(%d)]"), *__FILENAME__, TEXT(__FUNCTION__), __LINE__)
@@ -254,9 +330,6 @@ struct FLogGuard
 	{
 		// 함수 시작 로그 출력
 		UE_LOG(LogTemp, Log, TEXT("[Start][%s]"), *FunctionName);
-
-		UE_LOG(LogTemp, Log, TEXT("Recv PacketID : %d, PacketSize : %d"), 1,2);
-
 	}
 
 	// 소멸자: 함수의 끝 로그를 출력합니다.
