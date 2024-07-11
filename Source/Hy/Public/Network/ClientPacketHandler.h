@@ -112,6 +112,7 @@ private:
 	#else
 			FString strPacketID = FString::Printf(TEXT("[PacketID(%d)]"), packet_id);
 			LOG_GUARD_STR(strPacketID);
+			SCREEN_LOG_V("[Protocol] %s", *strPacketID);
 	#endif
 			bool bret = func(session, pkt);
 	#else

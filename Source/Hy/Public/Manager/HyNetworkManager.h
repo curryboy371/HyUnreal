@@ -35,6 +35,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Protocol")
 	void CSLeaveGame();
 
+	void CSMoveObject(Protocol::hyps_pos_info* InDesiredPosInfo);
+	
+	FString GetSocketName();
+
 private:
 	// GameServer
 	class FSocket* Socket;

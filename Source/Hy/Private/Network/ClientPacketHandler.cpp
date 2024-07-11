@@ -126,7 +126,7 @@ bool SC_ENTER_GAME(HySessionRef& session, Protocol::SC_ENTER_GAME& pkt)
         SpawnInfo.Location = FVector(MyPlayer.x(), MyPlayer.y(), MyPlayer.z());
         SpawnInfo.Rotation = FRotator(0.f, MyPlayer.yaw(), 0.f);
 
-        if(GGameInstance->GetManager<UHySpawnManager>())
+        if (GGameInstance->GetManager<UHySpawnManager>())
         {
             GGameInstance->GetManager<UHySpawnManager>()->SpawnMyPlayer(SpawnInfo);
         }
@@ -142,7 +142,7 @@ bool SC_ENTER_GAME(HySessionRef& session, Protocol::SC_ENTER_GAME& pkt)
 
 bool SC_LEAVE_GAME(HySessionRef& session, Protocol::SC_LEAVE_GAME& pkt)
 {
-
+    SCREEN_LOG_V("SC_Leave_Game");
     return true;
 }
 
@@ -213,6 +213,7 @@ bool SC_DESPAWN(HySessionRef& session, Protocol::SC_DESPAWN& pkt)
     }
 
 
+
     return true;
 }
 
@@ -253,12 +254,9 @@ bool SC_MOVE_OBJECT(HySessionRef& session, Protocol::SC_MOVE_OBJECT& pkt)
         return false;
     }
 
-    Protocol::hyps_object_info move_info = pkt.move_info();
-    Protocol::hyps_pos_info pos_info =  move_info.pos_info();
+    Protocol::hyps_pos_info pos_info = pkt.move_info();
     
-    FVector Location = FVector(pos_info.x(), pos_info.y(), pos_info.z());
-    SpawnMgr->MoveObject(move_info.object_id(), Location);
-
+    SpawnMgr->MoveObject(pos_info);
 
     return true;
 }

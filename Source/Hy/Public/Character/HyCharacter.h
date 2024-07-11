@@ -16,6 +16,8 @@ class HY_API AHyCharacter : public ACharacter
 public:
 	// Sets default values for this character's properties
 	AHyCharacter();
+	virtual ~AHyCharacter();
+
 
 protected:
 	// Called when the game starts or when spawned
@@ -58,12 +60,17 @@ protected:
 	ECharacterState CharacterState;
 
 public:
+	void SetDesiredPosInfo(const Protocol::hyps_pos_info& InDesiredPosInfoRef);
+	void SetDesiredPosInfo(const FVector& InPosInfo, const float InYaw, Protocol::hype_move_state InMoveState);
+	void SetPosInfo(const FVector& InPosInfo, const float InYaw, Protocol::hype_move_state InMoveState);
+
 	GETTER(int64, ObjectID)
 	SETTER(int64, ObjectID)
 
 protected:
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Data, meta = (AllowPrivateAccess = "true"))
 	int64 ObjectID;
 
+	Protocol::hyps_pos_info* PosInfo;
+	Protocol::hyps_pos_info* DesiredPosInfo;
 };

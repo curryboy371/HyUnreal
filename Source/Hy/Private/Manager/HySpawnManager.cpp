@@ -29,54 +29,73 @@ void UHySpawnManager::SpawnMyPlayer(const FObjectSpawnInfo& InObjectInfo)
     그냥 언리얼에서 직접 생성한 PC를 사용하는게 나을 것 같아 수정함
     */
 
-    FString PlayerBlueprintPath = TEXT("/Game/Blueprints/Character/HyMyPlayer_BP.HyMyPlayer_BP_C");
-    UClass* PlayerBPClass = StaticLoadClass(AActor::StaticClass(), nullptr, *PlayerBlueprintPath);
-
-    if (PlayerBPClass)
+    AHyPlayerController* PlayerController = Cast<AHyPlayerController>(GetWorld()->GetFirstPlayerController());
+    if (PlayerController == nullptr)
     {
-        // PC 먼저 생성
-        APlayerController* PC = nullptr;
-        AGameModeBase* MyGameMode = Cast<AGameModeBase>(UGameplayStatics::GetGameMode(this));
-        if (MyGameMode)
-        {
-            FString Option;
-            PC = MyGameMode->SpawnPlayerController(ROLE_AutonomousProxy, Option);
-        }
-
-        if (PC)
-        {
-            AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(PlayerBPClass, InObjectInfo.Location, InObjectInfo.Rotation);
-            if (SpawnedActor)
-            {
-                if (AActor* Actor = Cast<AActor>(SpawnedActor))
-                {
-                    // NewCharacter Init
-                    ObjectsMap.Emplace(InObjectInfo.ObjectID, Actor);
-                    MyPlayer = Cast<AHyMyPlayerCharacter>(SpawnedActor);
-                    if (MyPlayer)
-                    {
-                        PC->Possess(MyPlayer);
-                        MyPlayer->AddMappingContext();
-                        MyPlayer->Set_ObjectID(InObjectInfo.ObjectID);
-
-                    }
-                }
-            }
-            else
-            {
-                ERR_V("Character Create Fail ID : %lld", InObjectInfo.ObjectID);
-                return;
-            }
-
-        }
-
-
-    }
-    else
-    {
-        ERR_V("Character Class find error %lld", InObjectInfo.ObjectID);
+        ERR_V("invalid player controller");
         return;
     }
+
+    MyPlayer = Cast<AHyMyPlayerCharacter>(PlayerController->GetPawn());
+    if (MyPlayer == nullptr)
+    {
+        ERR_V("invalid MyPlayer");
+        return;
+    }
+
+    MyPlayer->SetActorLocation(InObjectInfo.Location);
+    MyPlayer->SetActorRotation(InObjectInfo.Rotation);
+    MyPlayer->Set_ObjectID(InObjectInfo.ObjectID);
+    ObjectsMap.Add(InObjectInfo.ObjectID, MyPlayer);
+
+    //FString PlayerBlueprintPath = TEXT("/Game/Blueprints/Character/HyMyPlayer_BP.HyMyPlayer_BP_C");
+    //UClass* PlayerBPClass = StaticLoadClass(AActor::StaticClass(), nullptr, *PlayerBlueprintPath);
+    //
+    //if (PlayerBPClass)
+    //{
+    //    // PC 먼저 생성
+    //    APlayerController* PC = nullptr;
+    //    AGameModeBase* MyGameMode = Cast<AGameModeBase>(UGameplayStatics::GetGameMode(this));
+    //    if (MyGameMode)
+    //    {
+    //        FString Option;
+    //        PC = MyGameMode->SpawnPlayerController(ROLE_AutonomousProxy, Option);
+    //    }
+    //
+    //    if (PC)
+    //    {
+    //        AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(PlayerBPClass, InObjectInfo.Location, InObjectInfo.Rotation);
+    //        if (SpawnedActor)
+    //        {
+    //            if (AActor* Actor = Cast<AActor>(SpawnedActor))
+    //            {
+    //                // NewCharacter Init
+    //                ObjectsMap.Emplace(InObjectInfo.ObjectID, Actor);
+    //                MyPlayer = Cast<AHyMyPlayerCharacter>(SpawnedActor);
+    //                if (MyPlayer)
+    //                {
+    //                    PC->Possess(MyPlayer);
+    //                    MyPlayer->AddMappingContext();
+    //                    MyPlayer->Set_ObjectID(InObjectInfo.ObjectID);
+    //
+    //                }
+    //            }
+    //        }
+    //        else
+    //        {
+    //            ERR_V("Character Create Fail ID : %lld", InObjectInfo.ObjectID);
+    //            return;
+    //        }
+    //
+    //    }
+    //
+    //
+    //}
+    //else
+    //{
+    //    ERR_V("Character Class find error %lld", InObjectInfo.ObjectID);
+    //    return;
+    //}
 }
 
 void UHySpawnManager::SpawnObject(const FObjectSpawnInfo& InObjectInfo)
@@ -124,20 +143,27 @@ void UHySpawnManager::DeSpawnObject(const int64 ObjectID)
         ERR_V("invaild object id %lld", ObjectID);
         return;
     }
-    
-    (*Object)->Destroy();
+    if ((*Object)->IsPendingKillPending() == false)
+    {
+        (*Object)->Destroy();
+    }
+
     ObjectsMap.Remove(ObjectID);
 }
 
-void UHySpawnManager::MoveObject(const int64 ObjectID, const FVector& InLocation)
+void UHySpawnManager::MoveObject(const Protocol::hyps_pos_info& InPosInfoRef)
 {
-    TObjectPtr<AActor>* Object = ObjectsMap.Find(ObjectID);
+    SCREEN_LOG_V("Move %lld %f %f %f %d", InPosInfoRef.object_id(), InPosInfoRef.x(), InPosInfoRef.y(), InPosInfoRef.z(), (int32)InPosInfoRef.move_state());
+    TObjectPtr<AActor>* Object = ObjectsMap.Find(InPosInfoRef.object_id());
     if (Object == nullptr || *Object == nullptr)
     {
-        ERR_V("invaild object id %lld", ObjectID);
+        ERR_V("invaild object id %lld", InPosInfoRef.object_id());
         return;
     }
-    
-    (*Object)->SetActorLocation(InLocation);
 
+    TObjectPtr<AHyCharacter> MoveCharacter = Cast<AHyCharacter>((*Object));
+    if (MoveCharacter)
+    {
+        MoveCharacter->SetDesiredPosInfo(InPosInfoRef);
+    }
 }

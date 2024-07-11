@@ -9,7 +9,10 @@
 #include "Protocol.pb.h"
 
 #include "HyTimeManager.h"
+#include "HyNetworkManager.h"
+#include "HySpawnManager.h"
 
+#include "HyMyPlayerCharacter.h"
 
 void UHyNetworkManager::InitManager()
 {
@@ -126,4 +129,33 @@ void UHyNetworkManager::CSLeaveGame()
 		GameSession->SendPacket(SendBuffer);
 	}
 
+}
+
+void UHyNetworkManager::CSMoveObject(Protocol::hyps_pos_info* InDesiredPosInfo)
+{
+	if (GameSession)
+	{
+		if (InDesiredPosInfo)
+		{
+			if (TObjectPtr<class AHyMyPlayerCharacter> MyPlayer = GGameInstance->GetManager<UHySpawnManager>()->GetMyPlayer())
+			{
+				Protocol::CS_MOVE_OBJECT MovePkt;
+				*(MovePkt.mutable_move_info()) = *InDesiredPosInfo;
+				SendBufferRef SendBuffer = ClientPacketHandler::MakeSendBuffer(MovePkt);
+				GameSession->SendPacket(SendBuffer);
+			}
+		}
+
+	}
+}
+
+FString UHyNetworkManager::GetSocketName()
+{
+	FString SocketName;
+	if (Socket)
+	{
+		SocketName = FString::FormatAsNumber(Socket->GetPortNo());
+	}
+
+	return SocketName;
 }

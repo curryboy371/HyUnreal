@@ -32,7 +32,9 @@ public:
 	void SpawnMyPlayer(const FObjectSpawnInfo& InObjectInfo);
 	void SpawnObject(const FObjectSpawnInfo& InObjectInfo);
 	void DeSpawnObject(const int64 ObjectID);
-	void MoveObject(const int64 ObjectID, const FVector& InLocation);
+	void MoveObject(const Protocol::hyps_pos_info& InPosInfoRef);
+
+	TObjectPtr<class AHyMyPlayerCharacter> GetMyPlayer() { return MyPlayer; }
 
 protected:
 	TMap<int64, TObjectPtr<AActor>> ObjectsMap;

@@ -18,6 +18,8 @@ public:
 	AHyMyPlayerCharacter();
 
 public:
+	virtual void Tick(float DeltaTime) override;
+
 	void AddMappingContext();
 
 protected:
@@ -40,6 +42,8 @@ protected:
 	void Input_Test2(const struct FInputActionValue& Value);
 	void Input_Test3(const struct FInputActionValue& Value);
 
+
+	FString GetSocketNumber();
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Input)
@@ -81,4 +85,21 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Input)
 	class UInputAction* TestAction3;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Input)
+	FString SocketNum;
+
+
+private:
+	float ElapsedTime = 0.0f;
+	float IntervalTime = 2.0f;
+
+	// Move Cache 
+	FVector2D LastDesiredInput;
+	FVector2D DesiredInput;
+
+	FVector DesiredMoveDirection;
+
+	float DesiredYaw;
+
 };

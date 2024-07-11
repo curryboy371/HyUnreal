@@ -296,6 +296,7 @@ inline FString GetCleanFilename(const char* FilePath)
 
 #define __FILENAME__ (GetCleanFilename(__FILE__))
 
+
 #if UE_BUILD_SHIPPING
 // Shipping에서는 출력을 무시할 log
 #define LOG_V(Fmt, ...)
