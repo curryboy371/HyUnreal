@@ -8,12 +8,23 @@
 
 #include "ClientPacketHandler.h"
 
+#include "FX/HyFXDispatcher.h"
+#include "HyGameplayTags.h"
+
+
 void UHyGameInstance::InitGameInstnace()
 {
     GGameInstance = Cast<UHyGameInstance>(GWorld->GetGameInstance());
     ClientPacketHandler::Init();
     LOG_I;
     InitManager();
+
+    FHyGameplayTags::InitializeTags();
+
+    if (nullptr == HyFXDispatcher)
+    {
+        HyFXDispatcher = NewObject<UHyFXDispatcher>(this, UHyFXDispatcher::StaticClass());
+    }
 }
 
 void UHyGameInstance::ClearGameInstnace()

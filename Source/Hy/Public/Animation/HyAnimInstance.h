@@ -37,6 +37,10 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "UpdateData", meta = (BlueprintThreadSafe))
 	ELocomotionDirection CalculationLocomotionDirection(float CurAngle, ELocomotionDirection CurDirection, FVector2D BackwardRange, FVector2D ForwardRange, float DeadZone);
 
+	UFUNCTION(BlueprintCallable, Category = "UpdateData", meta = (BlueprintThreadSafe))
+	ELocomotion4Direction CalculationLocomotion4Direction(float CurAngle, ELocomotion4Direction CurDirection, FVector2D BackwardRange, FVector2D ForwardRange, float DeadZone);
+
+
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UCharacterMovementComponent* CharacterMovementComponent;
@@ -62,6 +66,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Input, meta = (AllowPrivateAccess = "true"))
 	ELocomotionDirection LastFrameLocomotionDirection;
 
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Input, meta = (AllowPrivateAccess = "true"))
+	ELocomotion4Direction AccelerationLocomotionDirection;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data, meta = (AllowPrivateAccess = "true"))
 	FVector WorldLocation;
@@ -90,12 +97,23 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data, meta = (AllowPrivateAccess = "true"))
 	bool bIsAccelerating;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data, meta = (AllowPrivateAccess = "true"))
+	FVector PivotAcceleration2D;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data, meta = (AllowPrivateAccess = "true"))
+	float PivotDot;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data, meta = (AllowPrivateAccess = "true"))
+	float LastPivotDot;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data, meta = (AllowPrivateAccess = "true"))
 	float JumpApexTime;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data, meta = (AllowPrivateAccess = "true"))
 	float GroundDistance;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data, meta = (AllowPrivateAccess = "true"))
+	float StopDistance;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data, meta = (AllowPrivateAccess = "true"))
 	bool bIsJumping;
@@ -116,6 +134,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data, meta = (AllowPrivateAccess = "true"))
 	float VelocityAngle;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data, meta = (AllowPrivateAccess = "true"))
+	float AccelerationAngle;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Anim, meta = (AllowPrivateAccess = "true"))
 	UAnimSequence* IdleAnim;

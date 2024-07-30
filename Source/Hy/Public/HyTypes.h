@@ -6,11 +6,15 @@
 #include "CoreMinimal.h"
 #include "Protocol.pb.h"
 #include "UObject/NoExportTypes.h"
+#include "Kismet/GameplayStatics.h"
 
 
 #include "TimerManager.h"
 #include "Engine/World.h"
 
+#include "Engine/DataTable.h"
+#include "GameplayTagContainer.h" // FGameplayTag
+#include "Game/HyDeveloperSettings.h"
 
 #include "HyTypes.generated.h" // GENERATED_BODY() 매크로를 사용하기 위해 필요
 /**
@@ -144,96 +148,30 @@ struct FCharacterMoveOption
 
 };
 
-USTRUCT(BlueprintType)
-struct FDirectionalAnimations
-{
-	GENERATED_BODY()
-
-
-	FDirectionalAnimations()
-	{
-		Forward = nullptr;
-		//ForwardRight = nullptr;
-		//ForwardLeft = nullptr;
-		Right = nullptr;
-		Left = nullptr;
-		Backward = nullptr;
-		//BackwardRight = nullptr;
-		//BackwardLeft = nullptr;
-	}
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Directional Anim")
-	TObjectPtr<UAnimSequence> Forward;
-
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Directional Anim")
-	//UAnimSequence* ForwardRight;
-
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Directional Anim")
-	//UAnimSequence* ForwardLeft;
-
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Directional Anim")
-	TObjectPtr<UAnimSequence> Right;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Directional Anim")
-	TObjectPtr<UAnimSequence> Left;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Directional Anim")
-	TObjectPtr<UAnimSequence> Backward;
-
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Directional Anim")
-	//UAnimSequence* BackwardRight;
-	//
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Directional Anim")
-	//UAnimSequence* BackwardLeft;
-};
-
-USTRUCT(BlueprintType)
-struct FJumpAnimations
-{
-	GENERATED_BODY()
-		FJumpAnimations()
-	{
-		JumpStart = nullptr;
-		JumpStartLoop = nullptr;
-		JumpApex = nullptr;
-		JumpFallLand = nullptr;
-		JumpFallLoop = nullptr;
-	}
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Jump Anim")
-	TObjectPtr<UAnimSequence> JumpStart;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Jump Anim")
-	TObjectPtr<UAnimSequence> JumpStartLoop;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Jump Anim")
-	TObjectPtr<UAnimSequence> JumpApex;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Jump Anim")
-	TObjectPtr<UAnimSequence> JumpFallLand;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Jump Anim")
-	TObjectPtr<UAnimSequence> JumpFallLoop;
-};
-
 
 #pragma endregion
 
 
 #pragma region Enum
 
-UENUM(BlueprintType)
-enum class ELocomotionDirection : uint8
+UENUM()
+enum class EMoveMode : uint8
 {
-	Forward					UMETA(DisplayName = "Forward Direction"),
-	//ForwardRight			UMETA(DisplayName = "ForwardRight Direction"),
-	//ForwardLeft				UMETA(DisplayName = "ForwardLeft Direction"),
-	Backward				UMETA(DisplayName = "Backward Direction"),
-	//BackwardRight			UMETA(DisplayName = "BackwardRight Direction"),
-	//BackwardLeft			UMETA(DisplayName = "BackwardLeft Direction"),
-	Right					UMETA(DisplayName = "Right Direction"),
-	Left					UMETA(DisplayName = "Left Direction"),
+	EWalk UMETA(DisplayName = "Walk"),
+	ERun UMETA(DisplayName = "Run"),
+	ESprint UMETA(DisplayName = "ESprint"),
+	EDash UMETA(DisplayName = "Dash"),
+	EEvade UMETA(DisplayName = "Evade")
+};
+
+
+UENUM(BlueprintType)
+enum class EControlPlayer : uint8
+{
+	ENoneControl UMETA(DisplayName = "NoneControl"),
+	EPlayer1 UMETA(DisplayName = "Player1"),
+	EPlayer2 UMETA(DisplayName = "Player2"),
+	EPlayer3 UMETA(DisplayName = "Player3")
 };
 
 
@@ -269,6 +207,77 @@ enum class EManagerNum : uint8
 #pragma endregion
 
 
+
+#pragma region Struct
+
+// Common
+
+USTRUCT(BlueprintType)
+struct FHyStruct {
+
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = HY)
+	FGameplayTag TagName;
+
+
+	FORCEINLINE bool operator!=(const FGameplayTag& Other) const
+	{
+		return TagName != Other;
+	}
+
+	FORCEINLINE bool operator==(const FGameplayTag& Other) const
+	{
+		return TagName == Other;
+	}
+
+	FORCEINLINE bool operator!=(const FHyStruct& Other) const
+	{
+		return TagName != Other.TagName;
+	}
+
+	FORCEINLINE bool operator==(const FHyStruct& Other) const
+	{
+		return TagName == Other.TagName;
+	}
+};
+
+class UNiagaraSystem;
+class USoundBase;
+
+USTRUCT(BlueprintType)
+struct FBaseFX : public FTableRowBase
+{
+	GENERATED_BODY()
+
+public:
+	FBaseFX()
+	{
+		ActionSound = nullptr;
+		NiagaraParticle = nullptr;
+		PSParticle = nullptr;
+	}
+
+	FBaseFX(TObjectPtr<USoundBase> inSound, TObjectPtr<UNiagaraSystem> inNSParticle, TObjectPtr<UParticleSystem> inPSParticle)
+	{
+		ActionSound = inSound;
+		NiagaraParticle = inNSParticle;
+		PSParticle = inPSParticle;
+	}
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FX)
+	TObjectPtr<USoundBase> ActionSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FX)
+	TObjectPtr<UNiagaraSystem> NiagaraParticle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FX)
+	TObjectPtr<UParticleSystem> PSParticle;
+};
+
+
+
 #pragma region Utils
 
  // macro
@@ -280,70 +289,6 @@ USING_SHARED_PTR(SendBuffer);
 #pragma endregion
 
 
-#pragma region Log
-
-// 유틸리티 함수 정의
-inline FString GetCleanFilename(const char* FilePath)
-{
-	FString FilePathStr = FString(ANSI_TO_TCHAR(FilePath)).Replace(TEXT("\\"), TEXT("/"));
-	int32 LastSlashIndex;
-	if (FilePathStr.FindLastChar('/', LastSlashIndex))
-	{
-		return FilePathStr.RightChop(LastSlashIndex + 1);
-	}
-	return FilePathStr;
-}
-
-#define __FILENAME__ (GetCleanFilename(__FILE__))
-
-
-#if UE_BUILD_SHIPPING
-// Shipping에서는 출력을 무시할 log
-#define LOG_V(Fmt, ...)
-#define WAR_V(Fmt, ...)
-#define LOG_I
-#define LOG_GUARD
-#define LOG_GUARD_STR(str)
-#else
-
-#define LOG_E(msg)		UE_LOG(LogTemp, Log, TEXT("[LOG] %s", msg))
-#define LOG_V(Fmt, ...) UE_LOG(LogTemp, Log, TEXT("[LOG][%s::%s(%d)] " Fmt), *__FILENAME__, TEXT(__FUNCTION__), __LINE__, ##__VA_ARGS__)
-#define WAR_V(Fmt, ...) UE_LOG(LogTemp, Warning, TEXT("[WAR][%s::%s(%d)] " Fmt), *__FILENAME__, TEXT(__FUNCTION__), __LINE__, ##__VA_ARGS__)
-#define LOG_I			UE_LOG(LogTemp, Log, TEXT("[LOG][%s::%s(%d)]"), *__FILENAME__, TEXT(__FUNCTION__), __LINE__)
-
-#define LOG_GUARD			FLogGuard logGuard(__FILENAME__ + ANSI_TO_TCHAR(__FUNCTION__))
-#define LOG_GUARD_STR(str)	FLogGuard logGuard(__FILENAME__ + FString(TEXT("::")) + FString(ANSI_TO_TCHAR(__FUNCTION__)) + str)
-
-#endif
-
-#define SCREEN_LOG_V(Fmt, ...) GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Green, FString::Printf(TEXT("[LOG][%s::%s(%d)] " Fmt), *__FILENAME__, TEXT(__FUNCTION__), __LINE__, ##__VA_ARGS__))
-#define SCREEN_WAR_V(Fmt, ...) GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, FString::Printf(TEXT("[WAR][%s::%s(%d)] " Fmt), *__FILENAME__, TEXT(__FUNCTION__), __LINE__, ##__VA_ARGS__))
-#define SCREEN_ERR_V(Fmt, ...) GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, FString::Printf(TEXT("[ERR][%s::%s(%d)] " Fmt), *__FILENAME__, TEXT(__FUNCTION__), __LINE__, ##__VA_ARGS__))
-
-#define ERR_V(Fmt, ...) UE_LOG(LogTemp, Error, TEXT("[ERR][%s::%s(%d)] " Fmt), *__FILENAME__, TEXT(__FUNCTION__), __LINE__, ##__VA_ARGS__)
-
-
-// FLogGuard 구조체 정의
-struct FLogGuard
-{
-	FLogGuard(FString InStr)
-		: FunctionName(InStr)
-	{
-		// 함수 시작 로그 출력
-		UE_LOG(LogTemp, Log, TEXT("[Start][%s]"), *FunctionName);
-	}
-
-	// 소멸자: 함수의 끝 로그를 출력합니다.
-	~FLogGuard()
-	{
-		UE_LOG(LogTemp, Log, TEXT("[End][%s]"), *FunctionName);
-	}
-
-private:
-	FString FunctionName; // 함수 이름을 저장하는 변수
-};
-
-#pragma endregion
 
 #pragma region GetterSetter
 

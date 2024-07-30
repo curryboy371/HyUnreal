@@ -1,0 +1,31 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Engine/DataAsset.h"
+#include "Action/NPActionTypes.h"
+#include "GameplayTagContainer.h"
+
+#include "NPActionsDataAsset.generated.h"
+
+/**
+ * 
+ * 
+ * 
+ */
+UCLASS()
+class NP_API UNPActionsDataAsset : public UPrimaryDataAsset
+{
+	GENERATED_BODY()
+	
+public:
+	void AddOrModifyAction(const FNPActionState& InAction);
+	bool GetActionByTag(const FGameplayTag& InTag, FNPActionState& OutAction) const;
+
+	void GetActions(TArray<FNPActionState>& OutActions) const {	OutActions = Actions; }
+
+protected:
+	UPROPERTY(EditAnywhere, meta = (TitleProperty = "TagName"), BlueprintReadWrite, Category = "NP | Actions")
+	TArray<FNPActionState> Actions;
+};

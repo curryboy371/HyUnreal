@@ -51,9 +51,16 @@ public:
 		return Manager;
 	}
 
+	TObjectPtr<class UHyFXDispatcher> GetFXDispatcher() { return HyFXDispatcher; }
+
+
 protected:
 	UPROPERTY()
 	TMap<int32, class UHyManagerBase*> Managers;
 
+
+protected:
+	UPROPERTY()
+	TObjectPtr<class UHyFXDispatcher> HyFXDispatcher;
 };
 

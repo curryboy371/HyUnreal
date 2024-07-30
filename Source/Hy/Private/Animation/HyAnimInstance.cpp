@@ -103,15 +103,26 @@ void UHyAnimInstance::UpdateOwnerData()
 		CharacterVelocity2D = FVector(1.f, 1.f, 0.f) * CharacterVelocity;
 		bIsZeroVelocity = FMath::IsNearlyEqual(CharacterVelocity2D.Length(), 0.0f, 0.0001f);
 
+		// Set Pivot
+		LastPivotDot = PivotDot;
+
+		FVector NormalVelocity = CharacterVelocity2D.GetSafeNormal();
+		FVector NormalAcceleration = Acceleration2D.GetSafeNormal();
+		PivotDot = NormalVelocity.Dot(NormalAcceleration);
+
 		// Set Direction, Angle
 		LastFrameLocomotionDirection = LocomotionDirection;
 		VelocityAngle = UKismetAnimationLibrary::CalculateDirection(CharacterVelocity2D, WorldRotation);
+		AccelerationAngle = UKismetAnimationLibrary::CalculateDirection(Acceleration2D, WorldRotation);
+
 
 		FVector2D BackRange = { -130, 130 };
 		FVector2D LeftRange = { -130, -50 };
 		FVector2D RightRange = { 50, 130 };
 		FVector2D FowardRange = { -50, 50 };
 		LocomotionDirection = CalculationLocomotionDirection(VelocityAngle, LocomotionDirection, BackRange, FowardRange, 20.f);
+		AccelerationLocomotionDirection = CalculationLocomotion4Direction(AccelerationAngle, AccelerationLocomotionDirection, BackRange, FowardRange, 20.f);
+
 
 		bIsOnAir = CharacterMovementComponent->MovementMode == EMovementMode::MOVE_Falling;
 
@@ -148,46 +159,48 @@ ELocomotionDirection UHyAnimInstance::CalculationLocomotionDirection(float CurAn
 	// FVector2D X Min, Y Max
 	switch (CurDirection)
 	{
-	case ELocomotionDirection::Forward:
+	case ELocomotionDirection::F_0:
 	{
 		float Min = ForwardRange.X - DeadZone;
 		float Max = ForwardRange.Y + DeadZone;
 
 		if (UKismetMathLibrary::InRange_FloatFloat(CurAngle, Min, Max))
 		{
-			return ELocomotionDirection::Forward;
+			return ELocomotionDirection::F_0;
 		}
 	}
 
 		break;
-	case ELocomotionDirection::Backward:
+	case ELocomotionDirection::B_180:
 	{
 		if (CurAngle < BackwardRange.X + DeadZone || CurAngle > BackwardRange.Y - DeadZone)
 		{
-			return ELocomotionDirection::Backward;
+			return ELocomotionDirection::B_180;
 		}
 	}
 		break;
-	case ELocomotionDirection::Right:
+	case ELocomotionDirection::FR_90:
+	case ELocomotionDirection::BR_90:
 	{
 		float Min = ForwardRange.Y - DeadZone;
 		float Max = BackwardRange.Y + DeadZone;
 
 		if (UKismetMathLibrary::InRange_FloatFloat(CurAngle, Min, Max))
 		{
-			return ELocomotionDirection::Right;
+			return ELocomotionDirection::FR_90;
 		}
 
 	}
 		break;
-	case ELocomotionDirection::Left:
+	case ELocomotionDirection::FL_90:
+	case ELocomotionDirection::BL_90:
 	{
 		float Min = BackwardRange.X - DeadZone;
 		float Max = ForwardRange.X + DeadZone;
 
 		if (UKismetMathLibrary::InRange_FloatFloat(CurAngle, Min, Max))
 		{
-			return ELocomotionDirection::Left;
+			return ELocomotionDirection::FL_90;
 		}
 
 	}
@@ -198,7 +211,7 @@ ELocomotionDirection UHyAnimInstance::CalculationLocomotionDirection(float CurAn
 
 	if (CurAngle < BackwardRange.X || CurAngle > BackwardRange.Y)
 	{
-		return ELocomotionDirection::Backward;
+		return ELocomotionDirection::B_180;
 	}
 	else
 	{
@@ -206,18 +219,99 @@ ELocomotionDirection UHyAnimInstance::CalculationLocomotionDirection(float CurAn
 		float Max = ForwardRange.Y;
 		if (UKismetMathLibrary::InRange_FloatFloat(CurAngle, Min, Max))
 		{
-			return ELocomotionDirection::Forward;
+			return ELocomotionDirection::F_0;
 		}
 		else
 		{
 			if (CurAngle > 0.f)
 			{
-				return ELocomotionDirection::Right;
+				return ELocomotionDirection::FR_90;
 
 			}
 			else
 			{
-				return ELocomotionDirection::Left;
+				return ELocomotionDirection::FL_90;
+			}
+		}
+	}
+}
+
+ELocomotion4Direction UHyAnimInstance::CalculationLocomotion4Direction(float CurAngle, ELocomotion4Direction CurDirection, FVector2D BackwardRange, FVector2D ForwardRange, float DeadZone)
+{
+	// deadzone check
+// FVector2D X Min, Y Max
+	switch (CurDirection)
+	{
+	case ELocomotion4Direction::F_0:
+	{
+		float Min = ForwardRange.X - DeadZone;
+		float Max = ForwardRange.Y + DeadZone;
+
+		if (UKismetMathLibrary::InRange_FloatFloat(CurAngle, Min, Max))
+		{
+			return ELocomotion4Direction::F_0;
+		}
+	}
+
+	break;
+	case ELocomotion4Direction::B_180:
+	{
+		if (CurAngle < BackwardRange.X + DeadZone || CurAngle > BackwardRange.Y - DeadZone)
+		{
+			return ELocomotion4Direction::B_180;
+		}
+	}
+	break;
+	case ELocomotion4Direction::R_90:
+	{
+		float Min = ForwardRange.Y - DeadZone;
+		float Max = BackwardRange.Y + DeadZone;
+
+		if (UKismetMathLibrary::InRange_FloatFloat(CurAngle, Min, Max))
+		{
+			return ELocomotion4Direction::R_90;
+		}
+
+	}
+	break;
+	case ELocomotion4Direction::L_90:
+	{
+		float Min = BackwardRange.X - DeadZone;
+		float Max = ForwardRange.X + DeadZone;
+
+		if (UKismetMathLibrary::InRange_FloatFloat(CurAngle, Min, Max))
+		{
+			return ELocomotion4Direction::L_90;
+		}
+
+	}
+	break;
+	default:
+		break;
+	}
+
+	if (CurAngle < BackwardRange.X || CurAngle > BackwardRange.Y)
+	{
+		return ELocomotion4Direction::B_180;
+	}
+	else
+	{
+		float Min = ForwardRange.X;
+		float Max = ForwardRange.Y;
+		if (UKismetMathLibrary::InRange_FloatFloat(CurAngle, Min, Max))
+		{
+			return ELocomotion4Direction::F_0;
+		}
+		else
+		{
+			if (CurAngle > 0.f)
+			{
+				return ELocomotion4Direction::R_90;
+
+			}
+			else
+			{
+				return ELocomotion4Direction::L_90;
 			}
 		}
 	}

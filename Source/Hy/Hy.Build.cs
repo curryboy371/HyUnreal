@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 using UnrealBuildTool;
+using UnrealBuildTool.Rules;
 
 public class Hy : ModuleRules
 {
@@ -8,7 +9,12 @@ public class Hy : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
         
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "Sockets", "Networking", "AnimGraphRuntime" });
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore",
+            "EnhancedInput", "Sockets", "Networking", "AnimGraphRuntime", "UMG", "AIModule", "GameplayTags",
+            "NavigationSystem", "Niagara",
+            "MotionWarping", "AnimationLocomotionLibraryRuntime"
+        });
+
         PrivateDependencyModuleNames.AddRange(new string[] { "ProtobufCore" });
 
         PrivateIncludePaths.AddRange(new string[]
